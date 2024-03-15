@@ -1,3 +1,5 @@
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from dotenv import load_dotenv
 import os
 import requests
@@ -30,10 +32,20 @@ class AccountsServicesClass:
                     f"https://emailvalidation.abstractapi.com/v1/?api_key={api_key}&email={email}")
                 print(response.status_code)
                 if response.status_code == 200:
-                    if response.is_smtp_valid.value:
-                        return True
+                    return True
                 else:
                     return False
         except requests.RequestException as e:
             logging.error(f"Error verifying email: {e}")
-            return False
+            return
+
+
+class GenerateTokens:
+    @classmethod
+    def get_tokens(cls, user):
+        refresh_token = RefreshToken.for_user(user)
+        data = {
+            "refresh_token": str(refresh_token),
+            "access_token": str(refresh_token.access_token)
+        }
+        return data
