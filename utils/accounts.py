@@ -46,6 +46,8 @@ class GenerateTokens:
         refresh_token = RefreshToken.for_user(user)
         data = {
             "refresh_token": str(refresh_token),
-            "access_token": str(refresh_token.access_token)
+            "access_token": str(refresh_token.access_token),
+            "user_id" : str(user.id),
+            "is_authenticated": True
         }
         return data

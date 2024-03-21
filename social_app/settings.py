@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = "django-insecure-+^@da*8u7d4^qy+j@8-*n9ik$)_@ryuo#jv&5d*w$gm2wrmawm"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -43,8 +43,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "rest_framework",
     "corsheaders",
+    "django_extensions",
     "phonenumber_field",
     "accounts",
+    "moments"
 
 ]
 
@@ -62,7 +64,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    os.getenv("FRONT_URL")
+    "http://localhost:5173"
 ]
 
 ROOT_URLCONF = 'social_app.urls'
@@ -141,7 +143,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 from datetime import timedelta
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=2),
+    "REFRESH_TOKEN_LIFETIME": timedelta(hours=4),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True
 }
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT ="media"

@@ -72,7 +72,7 @@ class ValidationClass:
         
     @classmethod
     def validate_password(cls, password):
-        if len(password) > 8:
+        if len(password) > 3:
             return True
         raise ValueError("password must be at least of digits")
 
@@ -82,43 +82,81 @@ class UserManager(BaseUserManager):
         return self.get(username=username)
 
     def create_user(self, username, password, email, **extra_fields):
+        """
+            Create a new user.
+
+            :param username: The username for the new user.
+            :param password: The password for the new user.
+            :param email: The email address for the new user (optional).
+            :param superuser: Boolean indicating whether the user should be a superuser (default: False).
+            :param extra_fields: Additional fields to include when creating the user.
+            :return: The newly created user object if successful, None otherwise.
+            :raises ValueError: If username is not provided or if validation fails.
+            """
         if not username:
             raise ValueError("username is required")
-        email = self.normalize_email(email)
+        email = self.normalize_email(email) if email else None
         is_username_unique = ValidationClass.validate_username(username)
-        dob = extra_fields.get("dob")
-        dob_valid = ValidationClass.validate_dob(dob)
+        dob = extra_fields.get("dob", None)
+        dob_valid = ValidationClass.validate_dob(dob) if dob else True
         is_password_valid = ValidationClass.validate_password(password)
         if is_username_unique and dob_valid and is_password_valid:
-            if email:
-                is_email_valid = ValidationClass.validate_email(email)
-            if is_email_valid or email is None:
+            is_email_valid = ValidationClass.validate_email(email) if email else True
+            if is_email_valid:
                 user = self.model(username=username, email=email, **extra_fields)
                 user.set_password(password)
                 user.save()
                 return user
+        return None
 
-    def create_superuser(self, email, password, **extra_fields):
+
+    def create_superuser(self,username, password, email, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self.create_user(email, password, **extra_fields)
+        return self.create_user(username, password, email, **extra_fields)
 
     def authenticate_user(self, username=None, password=None):
+        print("username", username)
+        print("password", password)
         if username is not None and password is not None:
             user = authenticate(username=username, password=password)
+            print(user)
+            if not user:
+                raise ValueError("Incorrect username or password")
             return user
         else:
             raise ValueError("please provide username and password")
 
+    def deactivate_account(self, password, user):
+        pass
+
+    def delete_account(self, password, user):
+        try:
+            if not password:
+                raise ValueError("password is required")
+            if not user:
+                raise ValueError("user instance is required to delete the user")
+            user_instance_fetched = self.get(id=user.id)
+            user_instance_logged_in = authenticate(username=user.username, password=password)
+            if not user_instance_logged_in:
+                raise ValueError("Invalid password")
+            if user_instance_fetched == user_instance_logged_in:
+                user_instance_logged_in.delete()
+                return {"message": "User account deleted successfully"}
+        except Exception as e:
+            return {"error": str(e)}
+
 
 class User(AbstractUser):
     username = models.CharField(max_length=155, null=False, verbose_name="username", unique=True)
+    name = models.CharField(max_length=255, null=True, verbose_name="name")
     mobile = PhoneNumberField(blank=True, region="IN",null=True, verbose_name="mobile number",  unique=True)
     dob = models.DateField(null=True, verbose_name="date of birth")
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, verbose_name="gender")
     verified = models.BooleanField(default=False)
     professional = models.BooleanField(default=False)
     email = models.EmailField(unique=True, null=True)
+    profile_pic = models.ImageField(upload_to="user_profiles", null=True)
     USERNAME_FIELD = "username"
 
     objects = UserManager()
