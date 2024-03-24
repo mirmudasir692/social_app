@@ -37,4 +37,4 @@ class UserSerializer(serializers.ModelSerializer):
 class UserPartitionSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["username", "verified", "profile_pic"]
+        fields = ["id", "username", "verified", "profile_pic"]

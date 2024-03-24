@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     "django_extensions",
     "phonenumber_field",
     "accounts",
-    "moments"
+    "moments",
+    "features"
 
 ]
 
