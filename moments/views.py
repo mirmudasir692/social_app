@@ -43,6 +43,7 @@ class LeapApiView(APIView):
                 leap = Leaf.objects.like_moment(data, user_id=user.id)
                 return Response(status=status.HTTP_200_OK)
         except Exception as e:
+            print("error", str(e))
             return Response({"error" : str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 

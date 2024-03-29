@@ -8,11 +8,14 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from .models import User
 from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework.exceptions import ValidationError
+
 
 
 
 class LoginUserView(APIView):
-    def post(self, request):
+    @classmethod
+    def post(cls, request):
         data = request.data
         print(data)
         try:
@@ -29,7 +32,8 @@ class LoginUserView(APIView):
 
 
 class RegisterUserApiView(APIView):
-    def post(self, request):
+    @classmethod
+    def post(cls, request):
         data = request.data
         try:
             serializer = serializers.UserSerializer(data=data)
@@ -49,8 +53,8 @@ class RegisterUserApiView(APIView):
 class AdditionalUserFeatures(APIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
-
-    def get(self, request):
+    @classmethod
+    def get(cls, request):
         user = request.user
         """this allows user to see their profile"""
         try:
@@ -62,7 +66,8 @@ class AdditionalUserFeatures(APIView):
 
 
 class RefreshTokenApiView(TokenRefreshView):
-    def post(self, request, *args, **kwargs):
+    @classmethod
+    def post(cls, request, *args, **kwargs):
         data = request.data
         refresh_token = data.get("refresh_token", None)
         print(refresh_token)
@@ -77,3 +82,20 @@ class RefreshTokenApiView(TokenRefreshView):
             }
             return Response(data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class FollowApiView(APIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    @classmethod
+    def post(cls, request):
+        data = request.data
+        user = request.user
+        serializer = serializers.FollowSerializer(data=data)
+        try:
+            if serializer.is_valid(raise_exception=True):
+                followed_item = serializer.follow_user(user.id, data)
+                if followed_item:
+                    return Response(status=status.HTTP_200_OK)
+        except ValidationError as e:
+            return Response({"error":str(e)}, status=status.HTTP_400_BAD_REQUEST)

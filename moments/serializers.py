@@ -12,11 +12,13 @@ class MomentSerializer(serializers.ModelSerializer):
     tags = serializers.CharField(required=False)
     is_leaped = serializers.BooleanField(required=False)
     is_basked = serializers.BooleanField(required=False)
+    is_followed = serializers.BooleanField(required=False)
+
 
     class Meta:
         model = Moment
         fields = ("id", "caption", "description", "publisher", "video",
-                  "timestamp", "location", "archive", "tags", "leaps", "is_leaped", "is_basked")
+                  "timestamp", "location", "archive", "tags", "leaps", "is_leaped", "is_basked", "is_followed")
 
 
 class LeapSerializer(serializers.ModelSerializer):

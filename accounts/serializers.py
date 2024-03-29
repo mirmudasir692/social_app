@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Follow
 
 
 class LoginUserSerializer(serializers.Serializer):
@@ -17,10 +17,13 @@ class LoginUserSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     dob = serializers.DateField(format="%Y-%m-%d", required=False)
     password = serializers.CharField(write_only=True)
+    followers_num = serializers.IntegerField(required=False)
+    following_num = serializers.IntegerField(required=False)
 
     class Meta:
         model = User
-        fields = ['id', "username", "email", "mobile", "dob", "gender", "password", "profile_pic", "name"]
+        fields = ['id', "username", "email", "mobile", "dob", "gender",
+                  "password", "profile_pic", "name", "followers_num", "following_num"]
 
     def create(self, validated_data):
         username = validated_data.get("username", None)
@@ -34,7 +37,25 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(username=username, name=name, email=email, mobile=mobile, gender=gender, password=password, dob=dob, profile_pic=profile_pic)
         return user
 
+
 class UserPartitionSerializer(serializers.ModelSerializer):
+
+
+
     class Meta:
         model = User
         fields = ["id", "username", "verified", "profile_pic"]
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    follower = UserPartitionSerializer(required=False)
+    followed_user = UserPartitionSerializer(required=False)
+    class Meta:
+        model = Follow
+        fields = ["follower", "followed_user"]
+
+    @classmethod
+    def follow_user(cls, follower_id, data):
+        followed_user_id = data.get("followed_user_id", None)
+        followed_item = Follow.objects.follow_user(follower_id, followed_user_id)
+        return followed_item

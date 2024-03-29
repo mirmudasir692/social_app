@@ -18,7 +18,9 @@ def create_custon_id(length=12):
 
 class MomentManager(models.Manager):
     def get_moments(self, page, user):
+        from accounts.models import Follow
         from features.models import Basket
+
 
         leaped_moments_exists = Leaf.objects.filter(
             user=user,
@@ -28,10 +30,15 @@ class MomentManager(models.Manager):
             user=user,
             moment=OuterRef("pk")
         ).values("moment")
+        Followed_User_Exists = Follow.objects.filter(
+            follower = user,
+            followed_user_id = OuterRef("publisher_id")
+        ).values("followed_user_id")
 
         moments = self.all().order_by("id").annotate(
             is_leaped=Exists(leaped_moments_exists),
-            is_basked=Exists(basked_moment_exists)
+            is_basked=Exists(basked_moment_exists),
+            is_followed = Exists(Followed_User_Exists)
         )
         return moments
 

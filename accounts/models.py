@@ -4,6 +4,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from utils.accounts import AccountsServicesClass
 from django.contrib.auth import authenticate
 from datetime import datetime
+from rest_framework.exceptions import ValidationError
 
 GENDER_CHOICES = (
     ('M', 'Male'),
@@ -107,6 +108,7 @@ class UserManager(BaseUserManager):
                 user.set_password(password)
                 user.save()
                 return user
+
         return None
 
 
@@ -158,6 +160,8 @@ class User(AbstractUser):
     email = models.EmailField(unique=True, null=True)
     profile_pic = models.ImageField(upload_to="user_profiles", null=True)
     USERNAME_FIELD = "username"
+    followers_num = models.BigIntegerField(default=0)
+    following_num = models.BigIntegerField(default=0)
 
     objects = UserManager()
 
@@ -172,4 +176,26 @@ class User(AbstractUser):
         return self.username
 
 
-    
+class FollowManager(models.Manager):
+    def follow_user(self, follower_id, followed_user_id):
+        if not follower_id or not followed_user_id:
+            raise ValidationError("both fields are required")
+        try:
+            follow_item, created = self.get_or_create(follower_id=follower_id, followed_user_id=followed_user_id)
+            if not created:
+                follow_item.delete()
+            return True
+        except self.model.DoesNotExist:
+            raise ValueError("something went wrong")
+
+
+class Follow(models.Model):
+    follower = models.ForeignKey(User, related_name="following", on_delete=models.CASCADE)
+    followed_user = models.ForeignKey(User, related_name="followers", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = FollowManager()
+
+    def __str__(self):
+        return f"{self.follower} follows {self.followed_user}"
+
