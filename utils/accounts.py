@@ -48,6 +48,7 @@ class GenerateTokens:
             "refresh_token": str(refresh_token),
             "access_token": str(refresh_token.access_token),
             "user_id" : str(user.id),
-            "is_authenticated": True
+            "is_authenticated": True,
+            "profile_pic": user.profile_pic.url
         }
         return data

@@ -26,6 +26,23 @@ class MomentApiView(APIView):
             print("error", str(e))
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @classmethod
+    def post(cls, request):
+        data = request.data
+        user = request.user
+        print("data", data)
+        try:
+            serializer = MomentSerializer(data=data)
+            if serializer.is_valid(raise_exception=True):
+                moment = serializer.create_moment(data=data, user_id=user.id)
+                return Response(status=status.HTTP_200_OK)
+        except ValueError as e:
+            print("e", e)
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print("e", e)
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LeapApiView(APIView):
     authentication_classes = (JWTAuthentication,)

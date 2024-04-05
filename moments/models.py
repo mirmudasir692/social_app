@@ -21,7 +21,6 @@ class MomentManager(models.Manager):
         from accounts.models import Follow
         from features.models import Basket
 
-
         leaped_moments_exists = Leaf.objects.filter(
             user=user,
             moment=OuterRef("pk")
@@ -30,6 +29,7 @@ class MomentManager(models.Manager):
             user=user,
             moment=OuterRef("pk")
         ).values("moment")
+
         Followed_User_Exists = Follow.objects.filter(
             follower = user,
             followed_user_id = OuterRef("publisher_id")
@@ -59,6 +59,15 @@ class MomentManager(models.Manager):
                 raise ValueError("id is required")
         except Moment.DoesNotExist:
             raise ValueError("moment does't exist")
+
+    def create_moment(self, data, user_id):
+        caption = data.get("caption", None)
+        description = data.get("description", None)
+        video = data.get("video", None)
+        archive = data.get("archive", False)
+        tags = data.get("tags", None)
+        return self.create(caption=caption, description=description, publisher_id=user_id,
+                           video=video, archive=archive, tags=tags)
 
 
 class Moment(models.Model):

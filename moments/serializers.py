@@ -4,7 +4,7 @@ from .models import Moment, Leaf, Fruit
 
 
 class MomentSerializer(serializers.ModelSerializer):
-    publisher = UserPartitionSerializer()
+    publisher = UserPartitionSerializer(required=False)
     caption = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
     timestamp = serializers.DateTimeField(read_only=True)
@@ -19,6 +19,10 @@ class MomentSerializer(serializers.ModelSerializer):
         model = Moment
         fields = ("id", "caption", "description", "publisher", "video",
                   "timestamp", "location", "archive", "tags", "leaps", "is_leaped", "is_basked", "is_followed")
+
+    @classmethod
+    def create_moment(cls, data, user_id):
+        return Moment.objects.create_moment(data, user_id)
 
 
 class LeapSerializer(serializers.ModelSerializer):
