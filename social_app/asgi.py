@@ -1,16 +1,21 @@
-"""
-ASGI config for social_app project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/5.0/howto/deployment/asgi/
-"""
 
 import os
-
+from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
+from chatsystem.routing import websocket_urlpatterns
+from channels.auth import AuthMiddlewareStack
+from utils.auth_token import JwtAuthMiddlewareStack
+
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'social_app.settings')
 
-application = get_asgi_application()
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    "websocket": JwtAuthMiddlewareStack(
+        URLRouter(websocket_urlpatterns),
+    ),
+    "wss": JwtAuthMiddlewareStack(
+        URLRouter(websocket_urlpatterns),
+    ),
+
+})

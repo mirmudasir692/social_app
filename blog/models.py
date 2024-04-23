@@ -7,13 +7,20 @@ from django.db.models import OuterRef, Exists
 class BlogManager(models.Manager):
 
     def get_blogs(self, user_id):
+        from features.models import Save
         liked_blog_exists = Like.objects.filter(
             user_id=user_id,
             blog=OuterRef("pk")
         ).values()
+        saved_blog_exists = Save.objects.filter(
+            user_id=user_id,
+            blog=OuterRef("pk")
+        ).values()
+
         followed_user_ids = Follow.objects.filter(follower_id=user_id).values_list("followed_user_id", flat=True)
         blogs = self.filter(user_id__in=followed_user_ids).annotate(
-            is_liked=Exists(liked_blog_exists)
+            is_liked=Exists(liked_blog_exists),
+            is_saved=Exists(saved_blog_exists),
         )
         return blogs
 

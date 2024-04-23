@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from .serializers import BasketSerializer
+from .serializers import BasketSerializer, SaveBlogSerializer
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -21,3 +21,25 @@ class BasketView(APIView):
                 return Response(status=status.HTTP_200_OK)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class SaveBlogApiView(APIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    @classmethod
+    def post(cls, request, format=None):
+        data = request.data
+        user = request.user
+        serializer = SaveBlogSerializer(data=data)
+        try:
+            if serializer.is_valid(raise_exception=True):
+                serializer.save_blog(user.id, data)
+                return Response(status=status.HTTP_200_OK)
+            
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+

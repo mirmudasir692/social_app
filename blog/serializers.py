@@ -9,10 +9,11 @@ class BlogSerializer(serializers.ModelSerializer):
     comments = serializers.IntegerField(read_only=True)
     timestamp = serializers.DateTimeField(required=False)
     is_liked = serializers.BooleanField(required=False)
+    is_saved = serializers.BooleanField(required=False)
 
     class Meta:
         model = Blog
-        fields = ["id", "title", "content", "user", "likes", "comments", "timestamp", "is_liked"]
+        fields = ["id", "title", "content", "user", "likes", "comments", "timestamp", "is_liked", "is_saved"]
 
     @classmethod
     def create_blog(cls, data, user_id):

@@ -14,19 +14,26 @@ class BasketManager(models.Manager):
         except self.model.DoesNotExist:
             raise ValueError("Moment doest exist")
 
+
 class Basket(models.Model):
     moment = models.ForeignKey(Moment, on_delete=models.CASCADE, related_name="bucketed_moments")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="my_moments")
 
-
     objects = BasketManager()
+
     def __str__(self):
         return str(self.id)
 
 
 class SaveManager(models.Manager):
-    def save_blog(self, user_id, blog_id):
-        return self.create(user_id=user_id, blog_id=blog_id)
+    def save_blog(self, user_id, data):
+        blog_id = data.get("blog_id", None)
+        if not blog_id:
+            raise ValueError("blog_id is not provided")
+        saved_instance, created = self.get_or_create(user_id=user_id, blog_id=blog_id)
+        if not created:
+            saved_instance.delete()
+        return True
 
 
 class Save(models.Model):
@@ -34,7 +41,12 @@ class Save(models.Model):
     for saving blogs
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_blogs")
-    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="saves"),
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="saves")
+
+    objects = SaveManager()
+
+    class Meta:
+        verbose_name = "Blog Saves"
 
     def __str__(self):
         return self.user.username

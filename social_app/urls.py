@@ -9,5 +9,7 @@ urlpatterns = [
     path("moments/", include("moments.urls")),
     path("feature/", include("features.urls")),
     path("story/", include("story.urls")),
-    path("blog/", include("blog.urls"))
+    path("blog/", include("blog.urls")),
+    path("chat/", include("chatsystem.urls")),
+    path("note/", include("notes.urls"))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

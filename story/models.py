@@ -14,13 +14,13 @@ class StoryLodgerManager(models.Manager):
             )
         ).filter(has_stories=True)
 
+
 class StoryLodger(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     objects = StoryLodgerManager()
 
     def __str__(self):
         return self.user.username
-
 
 
 class StoryManager(models.Manager):
@@ -30,7 +30,7 @@ class StoryManager(models.Manager):
         return story
 
     def get_stories(self, user_id, lodger_id=None):
-        stories = self.filter( Q(storylodger__user_id=user_id) | Q(storylodger_id=lodger_id))
+        stories = self.filter(Q(storylodger__user_id=user_id) | Q(storylodger_id=lodger_id))
         return stories
 
 

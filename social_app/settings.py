@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,9 +50,12 @@ INSTALLED_APPS = [
     "moments",
     "features",
     "story",
-    "blog"
+    "blog",
+    "chatsystem",
+    "notes",
 
 ]
+
 
 AUTH_USER_MODEL ="accounts.User"
 
@@ -69,6 +73,9 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173"
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 ROOT_URLCONF = 'social_app.urls'
 
@@ -88,7 +95,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'social_app.wsgi.application'
+# WSGI_APPLICATION = 'social_app.wsgi.application'
+ASGI_APPLICATION = "social_app.asgi.application"
 
 
 # Database
@@ -100,6 +108,16 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+
 
 
 # Password validation
@@ -153,7 +171,7 @@ SIMPLE_JWT = {
 }
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT ="media"
+MEDIA_ROOT = "media"
 
 
 
