@@ -41,14 +41,19 @@ class AccountsServicesClass:
 
 
 class GenerateTokens:
+    @staticmethod
+    def default_profile_pic():
+        return "media/user placeholder/avatar-1577909_1280.png"
+
     @classmethod
     def get_tokens(cls, user):
         refresh_token = RefreshToken.for_user(user)
         data = {
             "refresh_token": str(refresh_token),
             "access_token": str(refresh_token.access_token),
-            "user_id" : str(user.id),
+            "user_id": str(user.id),
             "is_authenticated": True,
-            "profile_pic": user.profile_pic.url
+            "profile_pic": user.profile_pic.url if user.profile_pic else "/media/user placeholder/avatar-1577909_1280.png",
+            "username": user.username
         }
         return data

@@ -14,6 +14,16 @@ class BasketManager(models.Manager):
         except self.model.DoesNotExist:
             raise ValueError("Moment doest exist")
 
+    def get_my_basket(self, user_id):
+        my_basket = self.filter(user_id=user_id).select_related("moment").values(
+            "moment__id",
+            "moment__publisher",
+            "moment__cover_pic",
+            "moment__num_comments",
+            "moment__num_likes"
+        )
+        return my_basket
+
 
 class Basket(models.Model):
     moment = models.ForeignKey(Moment, on_delete=models.CASCADE, related_name="bucketed_moments")
@@ -34,6 +44,12 @@ class SaveManager(models.Manager):
         if not created:
             saved_instance.delete()
         return True
+
+    def get_saved_blogs(self, user_id):
+        blogs = self.filter(user_id=user_id)
+        print("user_id", user_id)
+        print("blogs", blogs)
+        return blogs
 
 
 class Save(models.Model):

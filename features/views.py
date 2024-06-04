@@ -11,6 +11,13 @@ class BasketView(APIView):
     permission_classes = (IsAuthenticated,)
 
     @classmethod
+    def get(cls, request):
+        user = request.user
+        my_basket = BasketSerializer.get_my_basket(user.id)
+        # print("my_basket", my_basket)
+        return Response(my_basket.data, status=status.HTTP_200_OK)
+
+    @classmethod
     def post(cls, request):
         data = request.data
         user = request.user
@@ -28,6 +35,12 @@ class SaveBlogApiView(APIView):
     permission_classes = (IsAuthenticated,)
 
     @classmethod
+    def get(cls, request):
+        user = request.user
+        serializer = SaveBlogSerializer.get_blogs(user.id)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @classmethod
     def post(cls, request, format=None):
         data = request.data
         user = request.user
@@ -42,4 +55,5 @@ class SaveBlogApiView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 

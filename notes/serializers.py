@@ -15,3 +15,7 @@ class NoteSerializer(serializers.ModelSerializer):
     @classmethod
     def create_note(cls, data, user_id):
         return NoteSerializer(Note.objects.add_note(data, user_id))
+
+    @classmethod
+    def update_note(cls, data, user_id):
+        return NoteSerializer(Note.objects.update_note(data, user_id))

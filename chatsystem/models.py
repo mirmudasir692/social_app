@@ -17,8 +17,10 @@ class MessageGroupManager(models.Manager):
             self.create(name=name, user1_id=user1_id, user2_id=user2_id)
         return group
 
+
     def get_groups(self, user_id):
         groups = self.filter(Q(user1_id=user_id) | Q(user2_id=user_id))
+        print("groups", groups)
         return groups
 
     def allocate_user(self, user_id, group):
@@ -90,6 +92,50 @@ class MessageManager(models.Manager):
         messages = self.filter(group__name=group_id).order_by("timestamp")
         # print("filtered messages", messages)
         return messages
+
+    def separate_group_users(self, group_name):
+        _, first_part = group_name.split("$")
+        user1_id, user2_id = first_part.split("&")
+        return user1_id, user2_id
+
+
+    def share_moment(self, sender_id,  data):
+        moment_id = data.get("moment_id", None)
+        group_name_list = data.get("group_name_list")
+        for group_name in group_name_list:
+            try:
+                user1, user2 = self.separate_group_users(group_name)
+                receiver_id = user2 if sender_id == user1 else user2
+                self.create(group=MessageGroup.objects.get(name=group_name), moment_id=moment_id, sender_id=sender_id, receiver_id=receiver_id)
+
+            except ValueError:
+                print(f"Error processing group name: {group_name}")
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+    def share_blog(self, sender_id,  data):
+        blog_id = data.get("blog_id", None)
+        group_name_list = data.get("group_name_list")
+        for group_name in group_name_list:
+            try:
+                user1, user2 = self.separate_group_users(group_name)
+                receiver_id = user2 if sender_id == user1 else user1
+                self.create(group=MessageGroup.objects.get(name=group_name), blog_id=blog_id, sender_id=sender_id, receiver_id=receiver_id)
+
+            except ValueError:
+                print(f"Error processing group name: {group_name}")
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+    def separate_share_task(self, sender_id, data):
+        blog_id = data.get("blog_id", None)
+        moment_id = data.get("moment_id", None)
+        if blog_id is not None:
+            return self.share_blog(sender_id, data)
+        elif moment_id is not None:
+            return self.share_moment(sender_id, data)
+        else:
+            return
 
 
 class Message(models.Model):

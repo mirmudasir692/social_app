@@ -13,7 +13,8 @@ class BlogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Blog
-        fields = ["id", "title", "content", "user", "likes", "comments", "timestamp", "is_liked", "is_saved"]
+        fields = ["id", "title", "content", "user", "likes", "comments", "timestamp", "is_liked", "is_saved", "likes",
+                  "comments"]
 
     @classmethod
     def create_blog(cls, data, user_id):
@@ -21,8 +22,17 @@ class BlogSerializer(serializers.ModelSerializer):
         return blog
 
 
+class PartialBlogSerializer(serializers.ModelSerializer):
+    content = serializers.CharField(required=False)
+
+    class Meta:
+        model = Blog
+        fields = ["id", "content"]
+
+
 class CommentSerializer(serializers.ModelSerializer):
     user = UserPartitionSerializer(required=False)
+
     class Meta:
         model = Comment
         fields = ["id", "content", "user", "timestamp"]

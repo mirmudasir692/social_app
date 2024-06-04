@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import User, Follow
 
 
+
 class LoginUserSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
@@ -19,11 +20,14 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     followers_num = serializers.IntegerField(required=False)
     following_num = serializers.IntegerField(required=False)
+    num_blogs = serializers.IntegerField(required=False)
+    num_moments = serializers.IntegerField(required=False)
+    profile_pic = serializers.ImageField(required=False)
 
     class Meta:
         model = User
         fields = ['id', "username", "email", "mobile", "dob", "gender",
-                  "password", "profile_pic", "name", "followers_num", "following_num"]
+                  "password", "profile_pic", "name", "followers_num", "following_num", "bio", "num_blogs", "num_moments"]
 
     def create(self, validated_data):
         username = validated_data.get("username", None)
@@ -34,19 +38,22 @@ class UserSerializer(serializers.ModelSerializer):
         password = validated_data.get("password", None)
         dob = validated_data.get("dob", None)
         profile_pic = validated_data.get("profile_pic", None)
-        user = User.objects.create_user(username=username, name=name, email=email, mobile=mobile, gender=gender, password=password, dob=dob, profile_pic=profile_pic)
+        bio = validated_data.get("bio", "")
+        user = User.objects.create_user(username=username, name=name, email=email, mobile=mobile, gender=gender,
+                                        password=password, dob=dob, profile_pic=profile_pic, bio=bio)
         return user
 
 
 class UserPartitionSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "verified", "profile_pic", "professional"]
+        fields = ["id", "username", "verified", "profile_pic", "professional", "bio"]
 
 
 class FollowSerializer(serializers.ModelSerializer):
     follower = UserPartitionSerializer(required=False)
     followed_user = UserPartitionSerializer(required=False)
+
     class Meta:
         model = Follow
         fields = ["follower", "followed_user"]
@@ -56,3 +63,13 @@ class FollowSerializer(serializers.ModelSerializer):
         followed_user_id = data.get("followed_user_id", None)
         followed_item = Follow.objects.follow_user(follower_id, followed_user_id)
         return followed_item
+
+
+class FriendSerializer(serializers.Serializer):
+    from moments.serializers import MomentSerializer
+    from blog.serializers import PartialBlogSerializer
+    from moments.serializers import PartialMomentSerializer
+
+    user_profile = UserPartitionSerializer(required=False)
+    moments = PartialMomentSerializer(required=False)
+    blogs = PartialBlogSerializer(required=False)

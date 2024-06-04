@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import MessageGroup, Message
-from .serializers import MessageGroupSerializer, MessageSerializer, ExtendedMessageSerializer
+from .serializers import MessageGroupSerializer, MessageSerializer, ExtendedMessageSerializer, PartitionGrouSerializer
 
 
 class ChatApiView(APIView):
@@ -31,4 +31,16 @@ class MessageChatApi(APIView):
         # print("messages", messages)
 
         serializer = MessageSerializer(messages, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UserAddFeatures(APIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    @classmethod
+    def get(cls, request, format=None):
+        user = request.user
+        groups = MessageGroup.objects.get_groups(user.id)
+        serializer = PartitionGrouSerializer(groups, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

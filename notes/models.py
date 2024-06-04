@@ -1,6 +1,7 @@
 from django.db import models
 from accounts.models import User
 from accounts.models import Follow
+from django.db.models import Q
 
 
 class NoteManager(models.Manager):
@@ -13,9 +14,17 @@ class NoteManager(models.Manager):
     def get_notes(self, user_id):
         followed_user_ids = Follow.objects.filter(follower_id=user_id).values_list("followed_user_id", flat=True)
         print("followed", followed_user_ids)
-        notes = self.filter(user_id__in=followed_user_ids)
+        notes = self.filter(Q(user_id=user_id) | Q(user_id__in=followed_user_ids))
         print("notes", notes)
         return notes
+
+    def update_note(self, data, user_id):
+        text = data.get("text", "")
+        audio = data.get("audio", None)
+        note = self.filter(user_id=user_id)
+        note.text = text
+        note.audio = audio
+        return note
 
 
 class Note(models.Model):

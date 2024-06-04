@@ -94,3 +94,20 @@ class CommentApiView(APIView):
         except Exception as e:
             print("e", e)
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserBlogApiView(APIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    @classmethod
+    def get(cls, request, format=None):
+        user = request.user
+        try:
+            blogs = Blog.objects.get_user_blogs(user.id)
+            serializer = BlogSerializer(blogs, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            print("e", e)
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+

@@ -29,7 +29,6 @@ class MomentManager(models.Manager):
             user=user,
             moment=OuterRef("pk")
         ).values("moment")
-
         Followed_User_Exists = Follow.objects.filter(
             follower = user,
             followed_user_id = OuterRef("publisher_id")
@@ -38,7 +37,7 @@ class MomentManager(models.Manager):
         moments = self.all().order_by("id").annotate(
             is_leaped=Exists(leaped_moments_exists),
             is_basked=Exists(basked_moment_exists),
-            is_followed = Exists(Followed_User_Exists)
+            is_followed=Exists(Followed_User_Exists)
         )
         return moments
 
@@ -66,8 +65,9 @@ class MomentManager(models.Manager):
         video = data.get("video", None)
         archive = data.get("archive", False)
         tags = data.get("tags", None)
+        cover_pic = data.get("cover_pic", None)
         return self.create(caption=caption, description=description, publisher_id=user_id,
-                           video=video, archive=archive, tags=tags)
+                           video=video, archive=archive, tags=tags, cover_pic=cover_pic)
 
 
 class Moment(models.Model):
@@ -84,6 +84,9 @@ class Moment(models.Model):
     archive = models.BooleanField(default=False)
     tags = models.TextField(max_length=1000, blank=True)
     leaps = models.IntegerField(default=0)
+    cover_pic = models.ImageField(upload_to="moments_cover", null=True)
+    num_likes = models.IntegerField(default=0)
+    num_comments = models.IntegerField(default=0)
 
     objects = MomentManager()
 

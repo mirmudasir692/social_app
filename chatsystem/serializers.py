@@ -37,6 +37,15 @@ class MessageGroupSerializer(serializers.ModelSerializer):
             return None
 
 
+class PartitionGrouSerializer(serializers.ModelSerializer):
+    user1 = UserPartitionSerializer(required=False)
+    user2 = UserPartitionSerializer(required=False)
+
+    class Meta:
+        model = MessageGroup
+        fields = ["name", "user1", "user2"]
+
+
 class MessageSerializer(serializers.ModelSerializer):
     message = serializers.CharField(required=False)
     moment = MomentSerializer(required=False)

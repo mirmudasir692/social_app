@@ -6,11 +6,10 @@ from . import serializers
 from utils.accounts import GenerateTokens
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
-from .models import User
+from .models import User, Follow
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework.exceptions import ValidationError
-
-
+from time import sleep
 
 
 class LoginUserView(APIView):
@@ -35,6 +34,7 @@ class RegisterUserApiView(APIView):
     @classmethod
     def post(cls, request):
         data = request.data
+        print("data", data)
         try:
             serializer = serializers.UserSerializer(data=data)
             if serializer.is_valid(raise_exception=True):
@@ -43,16 +43,20 @@ class RegisterUserApiView(APIView):
                 create user instance, save it and generate pair of tokens(refresh token and access token)
                 """
                 data = GenerateTokens.get_tokens(user)
+                sleep(5)
                 return Response(data, status=status.HTTP_200_OK)
         except ValueError as e:
+            print("e", str(e))
             return Response({"data": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            print("e", str(e))
             return Response({"data": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AdditionalUserFeatures(APIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
+
     @classmethod
     def get(cls, request):
         user = request.user
@@ -87,6 +91,7 @@ class RefreshTokenApiView(TokenRefreshView):
 class FollowApiView(APIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
+
     @classmethod
     def post(cls, request):
         data = request.data
@@ -99,3 +104,27 @@ class FollowApiView(APIView):
                     return Response(status=status.HTTP_200_OK)
         except ValidationError as e:
             return Response({"error":str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProfileApiView(APIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    @classmethod
+    def get(cls, request, format=None):
+        user_id = request.query_params.get("frnd_id", None)
+        friend_profile = User.objects.get_friend_profile(user_id)
+        serializer = serializers.FriendSerializer(friend_profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class FollowerFeatures(APIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    @classmethod
+    def get(cls, request, format=None):
+        user = request.user
+        followers_list = Follow.objects.get_all_followers(user.id)
+        serializer = serializers.UserPartitionSerializer(followers_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

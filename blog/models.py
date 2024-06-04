@@ -31,6 +31,10 @@ class BlogManager(models.Manager):
         blog.save()
         return blog
 
+    def get_user_blogs(self, user_id):
+        blogs = self.filter(user_id=user_id)
+        return blogs
+
     def delete_blog(self, blog_id, user_id):
         try:
             blog = self.get(id=blog_id)
@@ -43,7 +47,7 @@ class BlogManager(models.Manager):
 
 
 class Blog(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="my_blogs")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blogs")
     title = models.CharField(max_length=500, null=True)
     content = models.TextField(max_length=2000)
     likes = models.IntegerField(default=0)

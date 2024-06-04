@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     "blog",
     "chatsystem",
     "notes",
+    "share",
+    "PostConnect"
 
 ]
 

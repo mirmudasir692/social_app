@@ -25,7 +25,7 @@ class ValidationClass:
             else:
                 raise ValueError("Invalid Mobile number")
         else:
-            raise  ValueError("Mobile number cannot be empty")
+            raise ValueError("Mobile number cannot be empty")
 
     @classmethod
     def validate_username(cls, username):
@@ -147,17 +147,30 @@ class UserManager(BaseUserManager):
         except Exception as e:
             return {"error": str(e)}
 
+    def get_friend_profile(self, user_id):
+        user_profile = User.objects.prefetch_related("moments", "blogs").get(id=user_id)
+
+        return {'user_profile': user_profile, 'moments': user_profile.moments.all(), 'blogs': user_profile.blogs.all()}
+
+    @staticmethod
+    def default_profile_pic():
+        return "/user placeholder/avatar-1577909_1280.png"
+
 
 class User(AbstractUser):
     username = models.CharField(max_length=155, null=False, verbose_name="username", unique=True)
     name = models.CharField(max_length=255, null=True, verbose_name="name")
-    mobile = PhoneNumberField(blank=True, region="IN",null=True, verbose_name="mobile number",  unique=True)
+    mobile = PhoneNumberField(blank=True, region="IN", null=True, verbose_name="mobile number",  unique=True)
     dob = models.DateField(null=True, verbose_name="date of birth")
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, verbose_name="gender")
     verified = models.BooleanField(default=False)
     professional = models.BooleanField(default=False)
     email = models.EmailField(unique=True, null=True)
-    profile_pic = models.ImageField(upload_to="user_profiles", null=True)
+    profile_pic = models.ImageField(upload_to="user_profiles", null=True, default=UserManager.default_profile_pic)
+    bio = models.TextField(default="", blank=True)
+    num_blogs = models.IntegerField(default=0)
+    num_moments = models.IntegerField(default=0)
+
     USERNAME_FIELD = "username"
     followers_num = models.BigIntegerField(default=0)
     following_num = models.BigIntegerField(default=0)
@@ -187,6 +200,10 @@ class FollowManager(models.Manager):
         except self.model.DoesNotExist:
             raise ValueError("something went wrong")
 
+    def get_all_followers(self, user_id):
+        followers = self.filter(followed_user_id=user_id).values_list('follower', flat=True)
+        return User.objects.filter(id__in=followers)
+
 
 class Follow(models.Model):
     follower = models.ForeignKey(User, related_name="following", on_delete=models.CASCADE)
@@ -197,4 +214,6 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.follower} follows {self.followed_user}"
+
+
 

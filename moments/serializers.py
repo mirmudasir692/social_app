@@ -13,16 +13,25 @@ class MomentSerializer(serializers.ModelSerializer):
     is_leaped = serializers.BooleanField(required=False)
     is_basked = serializers.BooleanField(required=False)
     is_followed = serializers.BooleanField(required=False)
-
+    cover_pic = serializers.ImageField(required=False)
 
     class Meta:
         model = Moment
         fields = ("id", "caption", "description", "publisher", "video",
-                  "timestamp", "location", "archive", "tags", "leaps", "is_leaped", "is_basked", "is_followed")
+                  "timestamp", "location", "archive", "tags", "leaps",
+                  "is_leaped", "is_basked", "is_followed", "cover_pic")
 
     @classmethod
     def create_moment(cls, data, user_id):
         return Moment.objects.create_moment(data, user_id)
+
+
+class PartialMomentSerializer(serializers.ModelSerializer):
+    cover_pic = serializers.ImageField(required=False)
+
+    class Meta:
+        model = Moment
+        fields = ["id", "cover_pic"]
 
 
 class LeapSerializer(serializers.ModelSerializer):
@@ -46,6 +55,5 @@ class FruitSerializer(serializers.ModelSerializer):
 
     @classmethod
     def create_fruit(cls, validated_data, user_id):
-        print()
         fruit = Fruit.objects.make_fruit(validated_data, user_id)
         return fruit
