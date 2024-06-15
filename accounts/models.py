@@ -170,7 +170,7 @@ class User(AbstractUser):
     bio = models.TextField(default="", blank=True)
     num_blogs = models.IntegerField(default=0)
     num_moments = models.IntegerField(default=0)
-
+    num_posts = models.IntegerField(default=0)
     USERNAME_FIELD = "username"
     followers_num = models.BigIntegerField(default=0)
     following_num = models.BigIntegerField(default=0)
