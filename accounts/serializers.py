@@ -2,7 +2,6 @@ from rest_framework import serializers
 from .models import User, Follow
 
 
-
 class LoginUserSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
@@ -73,3 +72,13 @@ class FriendSerializer(serializers.Serializer):
     user_profile = UserPartitionSerializer(required=False)
     moments = PartialMomentSerializer(required=False)
     blogs = PartialBlogSerializer(required=False)
+
+
+class ExtendedUserSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    profile_pic = serializers.URLField()
+    username = serializers.CharField(required=False)
+    bio = serializers.CharField(required=False)
+    verified = serializers.BooleanField(required=False)
+    is_followed = serializers.BooleanField(required=False)
+    email = serializers.EmailField(required=False)

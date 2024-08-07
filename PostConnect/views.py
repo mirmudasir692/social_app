@@ -14,7 +14,7 @@ class PostApiView(APIView):
     @classmethod
     def get(cls, request, format=None):
         user = request.user
-        page_num = request.query_params.get("page", 1)
+        page_num = request.query_params.get("page_num", 1)
         posts, has_previous, has_next = Post.objects.get_posts(user.id, page_num)
         data = {
             "posts": posts,

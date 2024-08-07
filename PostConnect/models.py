@@ -2,7 +2,7 @@ from django.db import models
 import uuid
 from accounts.models import User
 from accounts.models import Follow
-from django.db.models import OuterRef, Exists
+from django.db.models import OuterRef, Exists, Q
 from django.core.paginator import Paginator
 
 
@@ -10,10 +10,14 @@ class PostManager(models.Manager):
 
     def get_posts(self, user_id, page_num):
 
+        print("page num in models", page_num)
         followed_user_ids = Follow.objects.filter(follower_id=user_id).values_list("followed_user_id", flat=True)
-        posts = self.filter(owner_id__in=followed_user_ids)
-        paginator = Paginator(posts, 4)
+        posts = self.filter(Q(owner_id__in=followed_user_ids) | Q(owner_id=user_id)).order_by("-created_at")
+        paginator = Paginator(posts, 1)
         posts = paginator.get_page(page_num)
+        print("posts", posts)
+        print("has_next", posts.has_next())
+        print("has_prev", posts.has_previous())
         return posts, posts.has_previous(), posts.has_next()
 
     def upload_post(self, user_id, data):

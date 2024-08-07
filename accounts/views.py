@@ -10,6 +10,7 @@ from .models import User, Follow
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework.exceptions import ValidationError
 from time import sleep
+from urllib.parse import unquote
 
 
 class LoginUserView(APIView):
@@ -128,3 +129,21 @@ class FollowerFeatures(APIView):
         followers_list = Follow.objects.get_all_followers(user.id)
         serializer = serializers.UserPartitionSerializer(followers_list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class SearchUser(APIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, format=None):
+        username_param = request.query_params.get("param", "")
+        username = unquote(username_param).strip('"')
+        user = request.user
+        try:
+            users = User.objects.search_users(username, user.id)
+            serializer = serializers.ExtendedUserSerializer(users, many=True)
+            print("data", serializer.data)
+            return Response({"data": serializer.data})
+        except Exception as e:
+            print("e", e)
+            return Response({"error": str(e)})

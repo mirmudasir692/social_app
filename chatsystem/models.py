@@ -81,16 +81,18 @@ class MessageManager(models.Manager):
         # return last_message
         if last_message:
             decrypted_msg = self.show_message(user_id, last_message)
-            # print("decrypted_msg", decrypted_msg)
+            print("decrypted_msg", decrypted_msg)
             # last_message = 0
-            return last_message
+            return decrypted_msg
         else:
             return None
 
-    def get_all_messages(self, group_id):
+    def get_all_messages(self, group_id, login_user_id):
         print("group_id", group_id)
         messages = self.filter(group__name=group_id).order_by("timestamp")
-        # print("filtered messages", messages)
+        print("filtered messages", messages)
+        for message in messages:
+            message.message = self.show_message(sender_id=login_user_id, message=message)
         return messages
 
     def separate_group_users(self, group_name):

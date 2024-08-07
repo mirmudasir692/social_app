@@ -5,6 +5,8 @@ from utils.accounts import AccountsServicesClass
 from django.contrib.auth import authenticate
 from datetime import datetime
 from rest_framework.exceptions import ValidationError
+from django.db.models import Q, Exists, OuterRef
+
 
 GENDER_CHOICES = (
     ('M', 'Male'),
@@ -156,6 +158,31 @@ class UserManager(BaseUserManager):
     def default_profile_pic():
         return "/user placeholder/avatar-1577909_1280.png"
 
+    def search_users(self, username, user_id):
+        print("username", type(username))
+        print("hii")
+
+        # Filter users based on the username
+        users = self.filter(Q(username__iexact=username) | Q(username__icontains=username))
+        print("users", users)
+
+        # Annotate each user with a boolean indicating if a follow relationship exists
+        users = users.annotate(
+            is_followed=Exists(
+                Follow.objects.filter(
+                    follower_id=user_id,
+                    followed_user_id=OuterRef('pk')
+                )
+            )
+        )
+
+        # Convert to a list of dictionaries to include only the desired fields
+        users = users.values("profile_pic", "username", "id", "bio", "email", "verified", "is_followed")
+
+        for user in users:
+            print("user", user["profile_pic"])
+        return users
+
 
 class User(AbstractUser):
     username = models.CharField(max_length=155, null=False, verbose_name="username", unique=True)
@@ -214,6 +241,7 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.follower} follows {self.followed_user}"
+
 
 
 

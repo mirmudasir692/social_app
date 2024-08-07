@@ -26,7 +26,7 @@ class MessageChatApi(APIView):
     @classmethod
     def get(cls, request, format=None):
         group_id = request.query_params.get("group_id")
-        messages = Message.objects.get_all_messages(group_id)
+        messages = Message.objects.get_all_messages(group_id, request.user.id)
         print("grouping", group_id)
         # print("messages", messages)
 

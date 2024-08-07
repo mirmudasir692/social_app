@@ -9,5 +9,6 @@ urlpatterns = [
     path("myaccount/", views.AdditionalUserFeatures.as_view(), name="additional_features"),
     path("follow/", views.FollowApiView.as_view(), name="follow"),
     path("friend_profile/", views.ProfileApiView.as_view(), name="friend_profile"),
-    path("my_following/", views.FollowerFeatures.as_view(), name="my_followings")
+    path("my_following/", views.FollowerFeatures.as_view(), name="my_followings"),
+    path("search/", views.SearchUser.as_view())
 ]
