@@ -27,13 +27,14 @@ class PostApiView(APIView):
     @classmethod
     def post(cls, request, format=None):
         data = request.data
-        print("data", data)
         user = request.user
         serializer = serializers.PostSerializer(data=data)
-        post_instance = None
-        if serializer.is_valid(raise_exception=True):
-            post_instance = serializer.create_post(data, user.id)
-        return Response(post_instance.data, status=status.HTTP_200_OK)
+        try:
+            if serializer.is_valid(raise_exception=True):
+                post_instance = serializer.create_post(data, user.id)
+                return Response(post_instance.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"data":str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PostLikeApiView(APIView):

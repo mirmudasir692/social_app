@@ -49,8 +49,8 @@ class ValidationClass:
         :return:
         """
         if not User.objects.filter(email=email).exists():
-            # is_email_valid = AccountsServicesClass.verify_email(email)
-            is_email_valid = True
+            is_email_valid = AccountsServicesClass.verify_email(email)
+            # is_email_valid = True
             if is_email_valid:
                 return email
             else:
@@ -75,9 +75,9 @@ class ValidationClass:
         
     @classmethod
     def validate_password(cls, password):
-        if len(password) > 3:
+        if len(password) >= 3:
             return True
-        raise ValueError("password must be at least of digits")
+        raise ValueError("password must be at least of three digits")
 
 
 class UserManager(BaseUserManager):
@@ -101,9 +101,9 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email) if email else None
         is_username_unique = ValidationClass.validate_username(username)
         dob = extra_fields.get("dob", None)
-        dob_valid = ValidationClass.validate_dob(dob) if dob else True
+        # dob_valid = ValidationClass.validate_dob(dob) if dob else True
         is_password_valid = ValidationClass.validate_password(password)
-        if is_username_unique and dob_valid and is_password_valid:
+        if is_username_unique  and is_password_valid:
             is_email_valid = ValidationClass.validate_email(email) if email else True
             if is_email_valid:
                 user = self.model(username=username, email=email, **extra_fields)
@@ -154,6 +154,27 @@ class UserManager(BaseUserManager):
 
         return {'user_profile': user_profile, 'moments': user_profile.moments.all(), 'blogs': user_profile.blogs.all()}
 
+    def update_user(self, user_id,data):
+        username = data.get("username", "")
+        password = data.get("password", "")
+        picture = data.get("picture", "")
+        name = data.get("name", "")
+        editable_fields = {"username":username, "picture":picture, "name":name}
+        user = self.get(id=user_id)
+        if username != "" and user.username != username:
+            check_user = self.filter(username=username).first()
+            if check_user:
+                raise ValidationError("username already taken!")
+        if user.check_password(password):
+            for field, value in editable_fields.items():
+                if value != "" or value != None:
+                    setattr(user, field, value)
+            user.save()
+            return user
+        else:
+            raise ValidationError("please write correct password")
+
+
     @staticmethod
     def default_profile_pic():
         return "/user placeholder/avatar-1577909_1280.png"
@@ -198,6 +219,8 @@ class User(AbstractUser):
     num_blogs = models.IntegerField(default=0)
     num_moments = models.IntegerField(default=0)
     num_posts = models.IntegerField(default=0)
+    identifier = models.CharField(max_length=100, null=True, unique=True, blank=True)
+    platform = models.CharField(max_length=20, null=True, blank=True)
     USERNAME_FIELD = "username"
     followers_num = models.BigIntegerField(default=0)
     following_num = models.BigIntegerField(default=0)
@@ -230,6 +253,10 @@ class FollowManager(models.Manager):
     def get_all_followers(self, user_id):
         followers = self.filter(followed_user_id=user_id).values_list('follower', flat=True)
         return User.objects.filter(id__in=followers)
+
+    def get_following_list(self, user_id):
+        followings = self.filter(follower_id=user_id).values_list("followed_user", flat=True)
+        return User.objects.filter(id__in=followings)
 
 
 class Follow(models.Model):

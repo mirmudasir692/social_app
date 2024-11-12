@@ -7,8 +7,7 @@ from django.db.models import Q
 class NoteManager(models.Manager):
     def add_note(self, data, user_id):
         text = data.get("text", None)
-        audio = data.get("audio", None)
-        note_instance = self.create(text=text, user_id=user_id, audio=audio)
+        note_instance = self.create(text=text, user_id=user_id)
         return note_instance
 
     def get_notes(self, user_id):
@@ -20,17 +19,15 @@ class NoteManager(models.Manager):
 
     def update_note(self, data, user_id):
         text = data.get("text", "")
-        audio = data.get("audio", None)
-        note = self.filter(user_id=user_id)
+        note = self.filter(user_id=user_id)[0]
         note.text = text
-        note.audio = audio
+        note.save()
         return note
 
 
 class Note(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.CharField(max_length=255, blank=True, )
-    audio = models.FileField(upload_to="notes_audio", null=True)
     added_on = models.DateTimeField(auto_now=True)
 
     objects = NoteManager()

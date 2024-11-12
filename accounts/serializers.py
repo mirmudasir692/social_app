@@ -42,6 +42,10 @@ class UserSerializer(serializers.ModelSerializer):
                                         password=password, dob=dob, profile_pic=profile_pic, bio=bio)
         return user
 
+    @classmethod
+    def update_user(cls, user_id, data):
+        return cls(User.objects.update_user(user_id, data)).data
+
 
 class UserPartitionSerializer(serializers.ModelSerializer):
     class Meta:

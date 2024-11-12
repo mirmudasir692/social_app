@@ -4,4 +4,4 @@ from .models import Note
 
 @admin.register(Note)
 class NoteAdmin(admin.ModelAdmin):
-    list_display = ("id", "text", "audio", "added_on")
+    list_display = ("id", "text", "added_on")

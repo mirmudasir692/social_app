@@ -15,6 +15,7 @@ class BasketManager(models.Manager):
             raise ValueError("Moment doest exist")
 
     def get_my_basket(self, user_id):
+        print(user_id)
         my_basket = self.filter(user_id=user_id).select_related("moment").values(
             "moment__id",
             "moment__publisher",

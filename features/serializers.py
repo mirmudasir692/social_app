@@ -19,12 +19,6 @@ class BasketSerializer(serializers.ModelSerializer):
         basket_item = Basket.objects.add_to_basket(moment_id, user_id)
         return basket_item
 
-    @classmethod
-    def get_my_basket(cls, user_id):
-        my_basket = cls(Basket.objects.get_my_basket(user_id), many=True)
-        print("serializer", my_basket)
-        return my_basket
-
 
 class SaveBlogSerializer(serializers.ModelSerializer):
     user = UserPartitionSerializer(required=False)

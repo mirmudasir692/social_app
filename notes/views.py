@@ -44,6 +44,7 @@ class NoteApiView(APIView):
         serializer = NoteSerializer(data=data, partial=True)
         if serializer.is_valid(raise_exception=True):
             note = serializer.update_note(data, request.user.id)
+            print("note", note.data)
             return Response(note.data, status=status.HTTP_200_OK)
 
 

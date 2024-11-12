@@ -1,3 +1,5 @@
+from pyexpat.errors import messages
+
 from django.db import models
 from moments.models import Moment
 from blog.models import Blog
@@ -54,13 +56,13 @@ class MessageManager(models.Manager):
         print("sender_id", sender_id)
         print("receiver_id", receiver_id)
         message = data.get("message", None)
-        encrypted_msg = encrypt_message(message) if message else " "
+        # encrypted_msg = encrypt_message(message) if message else " "
         blog_id = data.get("blog_id", None)
         moment_id = data.get("moment_id", None)
         file = data.get("file", None)
-        message_instance = self.create(group_id=group, message=encrypted_msg, moment_id=moment_id,
+        message_instance = self.create(group_id=group, message=message, moment_id=moment_id,
                     blog_id=blog_id, file=file, sender_id=sender_id, receiver_id=receiver_id)
-        message_instance.message = self.show_message(sender_id, message_instance)
+        # message_instance.message = self.show_message(sender_id, message_instance)
         return message_instance
 
     def show_message(self, sender_id, message):
@@ -80,10 +82,10 @@ class MessageManager(models.Manager):
         print("model1", last_message.sender.id)
         # return last_message
         if last_message:
-            decrypted_msg = self.show_message(user_id, last_message)
-            print("decrypted_msg", decrypted_msg)
+            # decrypted_msg = self.show_message(user_id, last_message)
+            # print("decrypted_msg", decrypted_msg)
             # last_message = 0
-            return decrypted_msg
+            return last_message
         else:
             return None
 
@@ -91,8 +93,8 @@ class MessageManager(models.Manager):
         print("group_id", group_id)
         messages = self.filter(group__name=group_id).order_by("timestamp")
         print("filtered messages", messages)
-        for message in messages:
-            message.message = self.show_message(sender_id=login_user_id, message=message)
+        # for message in messages:
+        #     message.message = self.show_message(sender_id=login_user_id, message=message)
         return messages
 
     def separate_group_users(self, group_name):
@@ -108,6 +110,7 @@ class MessageManager(models.Manager):
             try:
                 user1, user2 = self.separate_group_users(group_name)
                 receiver_id = user2 if sender_id == user1 else user2
+                print("creating moment message")
                 self.create(group=MessageGroup.objects.get(name=group_name), moment_id=moment_id, sender_id=sender_id, receiver_id=receiver_id)
 
             except ValueError:

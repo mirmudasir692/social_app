@@ -13,27 +13,22 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+from datetime import timedelta
 
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-+^@da*8u7d4^qy+j@8-*n9ik$)_@ryuo#jv&5d*w$gm2wrmawm"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-+^@da*8u7d4^qy+j@8-*n9ik$)_@ryuo#jv&5d*w$gm2wrmawm")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]  # Add your domain in production
 
 # Application definition
-
 INSTALLED_APPS = [
     "daphne",
     'django.contrib.admin',
@@ -43,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "rest_framework",
+    "django.contrib.sites",
     "corsheaders",
     "django_extensions",
     "phonenumber_field",
@@ -54,12 +50,15 @@ INSTALLED_APPS = [
     "chatsystem",
     "notes",
     "share",
-    "PostConnect"
-
+    "PostConnect",
+    "channels",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
 ]
 
-
-AUTH_USER_MODEL ="accounts.User"
+AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -70,14 +69,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware"
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173"
+    "http://localhost:5173",
 ]
-
-CORS_ALLOW_ALL_ORIGINS = True
-
 
 ROOT_URLCONF = 'social_app.urls'
 
@@ -97,17 +94,17 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'social_app.wsgi.application'
 ASGI_APPLICATION = "social_app.asgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
+# Database settings
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'social_app',
+        'USER': os.getenv("POSTGRESQL_USERNAME"),
+        'PASSWORD': os.getenv("POSTGRESQL_PASSWORD"),
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -120,11 +117,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-
-
 # Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -140,30 +133,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'Asia/Kolkata'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 STATIC_URL = 'static/'
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-from datetime import timedelta
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
@@ -175,5 +155,35 @@ SIMPLE_JWT = {
 MEDIA_URL = "/media/"
 MEDIA_ROOT = "media"
 
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
 
+SITE_ID = 1
 
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "SCOPE": ["email", "profile"],
+        "AUTH_PARAMS": {"access_type": "online"},
+        "OAUTH_PKCE_ENABLED": True,
+        "FETCH_USERINFO": True,
+        "CLIENT_ID": os.getenv("GOOGLE_CLIENT_ID"),
+        "CLIENT_SECRET": os.getenv("GOOGLE_SECRET_KEY")
+    }
+}
+SOCIALACCOUNT_STORE_TOKENS = True
+
+# CSRF Settings
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SECURE = False  # Set to True in production if using HTTPS
+CSRF_COOKIE_SAMESITE = 'None'  # Required for cross-site requests
+CSRF_TRUSTED_ORIGINS = ['http://localhost:5173', "http://127.0.0.1:8000"]  # Trusted origins for CSRF
+CSRF_USE_SESSIONS = False  # Use cookies instead of sessions for CSRF tokens
+SESSION_COOKIE_SAMESITE = 'None'  # Required for cross-site requests
+SESSION_COOKIE_SECURE = False  # Set to True in production if using HTTPS
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins (use with caution in production)
+CORS_ALLOW_CREDENTIALS = True  # Allow cookies to be sent with cross-origin requests
+
+LOGIN_REDIRECT_URL = "google/callback/"

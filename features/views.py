@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import status
+from .models import Basket
 
 
 class BasketView(APIView):
@@ -13,9 +14,9 @@ class BasketView(APIView):
     @classmethod
     def get(cls, request):
         user = request.user
-        my_basket = BasketSerializer.get_my_basket(user.id)
-        # print("my_basket", my_basket)
-        return Response(my_basket.data, status=status.HTTP_200_OK)
+        my_basket = Basket.objects.get_my_basket(user.id)
+        serializer = BasketSerializer(my_basket)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @classmethod
     def post(cls, request):
